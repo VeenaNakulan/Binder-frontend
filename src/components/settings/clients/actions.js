@@ -81,7 +81,7 @@ const deleteClient = id => {
     };
 };
 
-const getListForCommonFilterForClient = (params) => {
+const getListForCommonFilterForClient = params => {
     return async dispatch => {
         try {
             dispatch({ type: actionTypes.GET_LIST_FOR_COMMON_FILTER_REQUEST });
@@ -118,30 +118,29 @@ const getClientById = id => {
         } catch (e) {
             dispatch({ type: actionTypes.GET_CLIENT_BY_ID_FAILURE, error: e.response && e.response.data });
         }
-    }
-}
-const exportClient = (params) => {
+    };
+};
+const exportClient = params => {
     return async dispatch => {
         try {
             dispatch({ type: actionTypes.EXPORT_CLIENT_TABLE_REQUEST });
             const response = await Service.exportClient(params);
             if (response && response.data) {
-                const text = await (new Response(response.data)).text();
+                const text = await new Response(response.data).text();
                 if (text && text.split('"')[1] === "error") {
                     dispatch({ type: actionTypes.EXPORT_CLIENT_TABLE_SUCCESS, response: { error: text.split('"')[3] } });
                     return true;
-                }
-                else {
+                } else {
                     dispatch({ type: actionTypes.EXPORT_CLIENT_TABLE_SUCCESS, response: {} });
                 }
             }
             const { data } = response;
-            const name = response.headers['content-disposition'].split('filename=');
+            const name = response.headers["content-disposition"].split("filename=");
             const fileName = name[1].split('"')[1];
             const downloadUrl = window.URL.createObjectURL(new Blob([data]));
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = downloadUrl;
-            link.setAttribute('download', `${fileName}`); //any other extension
+            link.setAttribute("download", `${fileName}`); //any other extension
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -154,11 +153,11 @@ const exportClient = (params) => {
     };
 };
 
-const getAllClientLogs = (params,id) => {
+const getAllClientLogs = (params, id) => {
     return async dispatch => {
         try {
             dispatch({ type: actionTypes.GET_ALL_CLIENT_LOG_REQUEST });
-            const res = await Service.getAllClientLogs(params,id);
+            const res = await Service.getAllClientLogs(params, id);
             if (res && res.status === 200) {
                 if (res.data) {
                     dispatch({ type: actionTypes.GET_ALL_CLIENT_LOG_SUCCESS, response: res.data });

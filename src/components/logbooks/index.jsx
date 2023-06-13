@@ -113,17 +113,11 @@ class index extends Component {
                                                                         ? "items cursor-pointer"
                                                                         : "items cursor-pointer disable"
                                                                 }
-                                                                data-tip={
-                                                                    item.assigned_or_not === true
-                                                                        ? ""
-                                                                        : "Logbook Not Assigned"
-                                                                }
+                                                                data-tip={item.assigned_or_not === true ? "" : "Logbook Not Assigned"}
                                                                 data-for="log_book"
                                                                 onClick={() => this.handleSliderClick(item)}
                                                             >
-                                                                <div
-                                                                    className="item-head"
-                                                                >
+                                                                <div className="item-head">
                                                                     <div className="icon">
                                                                         <img src="/images/logo-inner.svg" alt="" />
                                                                     </div>

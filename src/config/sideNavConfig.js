@@ -370,6 +370,14 @@ export const sideNavConfig = () => {
                     permission: checkPermission("menu", "settings", "documents"),
                     image: null,
                     hasSubMenu: false
+                },
+                {
+                    key: "users",
+                    label: "UserDemo",
+                    url: "usersdemo",
+                    permission: checkPermission("menu", "settings", "users"),
+                    image: null,
+                    hasSubMenu: false
                 }
             ]
         }

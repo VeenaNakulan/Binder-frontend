@@ -130,7 +130,7 @@ class TableTopheader extends Component {
             addItem,
             handleGlobalSearch,
             showWildCardFilter,
-            globalSearchKey = null,
+            globalSearchKey = "",
             resetSort,
             toggleFilter,
             showViewModal,

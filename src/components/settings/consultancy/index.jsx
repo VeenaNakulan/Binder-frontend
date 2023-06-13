@@ -608,6 +608,7 @@ class index extends Component {
 
     render() {
         const { tableData, params, paginationParams, infoTabsData, logData, historyPaginationParams, historyParams, showWildCardFilter } = this.state;
+
         const {
             match: {
                 params: { section }

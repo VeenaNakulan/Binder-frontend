@@ -9,7 +9,6 @@ const mapStateToProps = state => {
     const { loginReducer } = state;
     return { loginReducer };
 };
-
 class Index extends Component {
     constructor(props) {
         super(props);

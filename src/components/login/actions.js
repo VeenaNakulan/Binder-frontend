@@ -6,6 +6,7 @@ const login = params => {
         try {
             dispatch({ type: actionTypes.LOGIN_REQUEST });
             const res = await Service.login(params);
+            // console.log("res", res);
             if (res && res.status === 200) {
                 const loginData = res.data;
                 //TODO change loginData.access_token to emailData.success (change api response)

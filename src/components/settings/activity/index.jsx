@@ -787,8 +787,7 @@ class index extends Component {
                     <LoadingOverlay active={isLoading} spinner={<Loader />}>
                         {section === "add" || section === "edit" ? (
                             <Form />
-                        ) :
-                         section === "activityinfo" ? (
+                        ) : section === "activityinfo" ? (
                             <ViewActivity
                                 keys={tableData.keys}
                                 config={tableData.config}

@@ -96,10 +96,9 @@ class TopFilter extends Component {
             isLoadingDropdown: false,
             master_filters
         });
-        if(key==="annual_years")
-        {
-        let myDiv = document.getElementById(`customCheck${new Date().getFullYear()}`);
-        if (myDiv) myDiv.scrollIntoView();
+        if (key === "annual_years") {
+            let myDiv = document.getElementById(`customCheck${new Date().getFullYear()}`);
+            if (myDiv) myDiv.scrollIntoView();
         }
     };
 
@@ -259,7 +258,7 @@ class TopFilter extends Component {
             location: { pathname },
             toggleMasterFilter
         } = this.props;
-        
+
         return (
             <>
                 <div className="hd-top master-filter-container" ref={this.setWrapperRef}>

@@ -110,9 +110,12 @@ import AssetForm from "./components/settings/asset/components/assetForm";
 import FormType from "./components/settings/formType/index";
 import buildingEditShift from "./components/settings/buildingActivity/buildingEditShift";
 import clientEditShift from "./components/settings/clientActivity/components/clientEditShift";
-import Documents from "./components/settings/Documents"
+import Documents from "./components/settings/Documents";
 import documentForm from "./components/settings/Documents/userForm";
 import globalReport from "./components/globalReport";
+
+import UserDemo from "./components/settings/user_Demo/index";
+import UserFormDemo from "./components/settings/user_Demo/userForm";
 
 function App() {
     return (
@@ -219,6 +222,14 @@ function App() {
                 <PrivateRoute exact path="/user/:section" component={userForm} />
                 <PrivateRoute exact path="/user/:section/:id" component={userForm} />
                 <PrivateRoute exact path="/user/:section/:id/:tab" component={Users} />
+
+                {/*------> userdemo */}
+                <PrivateRoute exact path="/usersdemo" component={UserDemo} />
+                <PrivateRoute exact path="/usersdemo/:section" component={UserFormDemo} />
+                {/* <PrivateRoute exact path="/user/:section" component={userForm} />
+                <PrivateRoute exact path="/user/:section/:id" component={userForm} />
+                <PrivateRoute exact path="/user/:section/:id/:tab" component={Users} /> */}
+                {/* userdemo <------ */}
 
                 <PrivateRoute exact path="/templates" component={Templates} />
                 <PrivateRoute exact path="/template/:section" component={TemplateForm} />
