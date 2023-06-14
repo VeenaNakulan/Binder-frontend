@@ -631,8 +631,6 @@ export const buildingTableData = {
         "display_name",
         "description",
         "number",
-        // "users",
-        // "client_users",
         "area",
         "cost",
         "enterprise_index",

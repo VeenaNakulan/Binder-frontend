@@ -3,15 +3,15 @@ import * as actionTypes from "./constants";
 const initialState = {
     usersData: [],
     addUsersData: {},
-    getUsersById: {},
-    editUsersById: {},
-    deleteUsersById: {},
-    getListForCommonFilterResponse: {},
-    getUsersByIdResponse: {},
-    getAllUsersLogResponse: {},
-    restoreUsersLogResponse: {},
-    deleteUsersLogResponse: {},
-    existingEmailResponse: {}
+    getUsersByid: []
+    // editUsersById: {},
+    // deleteUsersById: {},
+    // getListForCommonFilterResponse: {},
+    // getUsersByIdResponse: {},
+    // getAllUsersLogResponse: {},
+    // restoreUsersLogResponse: {},
+    // deleteUsersLogResponse: {},
+    // existingEmailResponse: {}
 };
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -45,6 +45,21 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 addUsersData: { success: false, ...action.error }
+            };
+
+        case actionTypes.GET_USERS_BYID_REQUEST:
+            return {
+                ...state
+            };
+        case actionTypes.GET_USERS_BYID_SUCCESS:
+            return {
+                ...state,
+                getUsersByid: { success: true, ...action.response }
+            };
+        case actionTypes.GET_USERS_BYID_FAILURE:
+            return {
+                ...state,
+                getUsersByid: { success: false, ...action.error }
             };
         default:
             return state;

@@ -42,6 +42,27 @@ export const addUsers = params => {
     };
 };
 
+export const getUsersById = id => {
+    return async dispatch => {
+        try {
+            dispatch({ type: actionTypes.GET_USERS_BYID_REQUEST });
+            const res = await Service.getUsersById(id);
+            if (res && res.status === 200) {
+                if (res.data) {
+                    dispatch({ type: actionTypes.GET_USERS_BYID_SUCCESS, response: res.data });
+                    return res.data;
+                } else {
+                    dispatch({ type: actionTypes.GET_USERS_BYID_FAILURE, error: res.data });
+                }
+            } else {
+                dispatch({ type: actionTypes.GET_USERS_BYID_FAILURE, error: res.data });
+            }
+        } catch (e) {
+            dispatch({ type: actionTypes.GET_USERS_BYID_FAILURE, error: e.response && e.response.data });
+        }
+    };
+};
+
 export const getUserPermissionDropdown = params => {
     return async dispatch => {
         try {

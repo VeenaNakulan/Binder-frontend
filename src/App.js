@@ -226,6 +226,8 @@ function App() {
                 {/*------> userdemo */}
                 <PrivateRoute exact path="/usersdemo" component={UserDemo} />
                 <PrivateRoute exact path="/usersdemo/:section" component={UserFormDemo} />
+                <PrivateRoute exact path="/usersdemo/:section/:id/:tab" component={UserDemo} />
+
                 {/* <PrivateRoute exact path="/user/:section" component={userForm} />
                 <PrivateRoute exact path="/user/:section/:id" component={userForm} />
                 <PrivateRoute exact path="/user/:section/:id/:tab" component={Users} /> */}

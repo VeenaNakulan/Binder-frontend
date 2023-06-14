@@ -50,7 +50,7 @@ class viewConsultancy extends Component {
                 permission: "",
                 reports: [],
                 escalation: [],
-                last_seen_at:""
+                last_seen_at: ""
             },
             showConfirmModalLog: false,
             selectedLog: "",
@@ -111,7 +111,7 @@ class viewConsultancy extends Component {
                     permission: userData.user.permission,
                     reports: userData.user.reports,
                     escalation: userData.user.escalation,
-                    last_seen_at:userData.user.last_seen_at
+                    last_seen_at: userData.user.last_seen_at
                 }
             });
         }
