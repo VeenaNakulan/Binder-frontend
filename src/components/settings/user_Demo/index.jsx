@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import LoadingOverlay from "react-loading-overlay";
+import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
 import history from "../../../config/history";
-import { deleteUsers, getUsers, getUsersById } from "./actions";
+import { deleteUsers, getUsers, getUsersById, getAllUsersLogs } from "./actions";
 import ToastMsg from "../../common/ToastMessage";
 import ConfirmationModal from "../../../components/common/components/ConfirmationModal";
 import Portal from "../../common/components/Portal";
@@ -14,12 +15,10 @@ import TableTopHeader from "../../../components/common/components/TableTopHeader
 import { userTableData } from "./components/tableConfig";
 import Pagination from "../../../components/common/components/Pagination";
 import ViewUser from "./viewUser";
-
-import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import { checkPermission } from "../../../config/utils";
 
 const Index = props => {
   const dispatch = useDispatch();
-  const { usersData, deleteUser } = useSelector(({ userdemoReducer }) => userdemoReducer);
   const { isLoading, setIsLoading } = props;
   const Params = useParams();
   const { section } = Params;
@@ -30,9 +29,14 @@ const Index = props => {
     paginationParams: { perPage: 20, currentPage: 0, totalCount: 0, totalPages: 0 },
     showWildCardFilter: false,
     infoTabsData: [],
-    showConfirmation: false
+    showConfirmation: false,
+    logData: { count: "", data: [] },
+    selectedItem: null
   });
-  const { params, paginationParams, showWildCardFilter, infoTabsData, showConfirmation } = state;
+  const { params, paginationParams, showWildCardFilter, infoTabsData, showConfirmation, logData } = state;
+
+  const { usersData, deleteUser, getAllUsersLogResponse } = useSelector(({ userdemoReducer }) => userdemoReducer);
+
   userTableData.data = usersData?.users;
 
   useEffect(() => {
@@ -48,6 +52,18 @@ const Index = props => {
     };
     getUser();
   }, [params]);
+
+  const getLogData = id => {
+    dispatch(getAllUsersLogs(params, id));
+  };
+
+  useEffect(() => {
+    const { logs, count } = getAllUsersLogResponse;
+    setState({
+      ...state,
+      logData: { ...logData, data: logs }
+    });
+  }, [getAllUsersLogResponse]);
 
   useEffect(() => {
     if (usersData?.success) {
@@ -95,7 +111,12 @@ const Index = props => {
   };
 
   const resetAllFilters = () => {
-    setState({ ...state, params: { ...params, limit: 40, page: 1, search: "", filters: null, list: null } });
+    setState({
+      ...state,
+      params: { ...params, limit: 40, page: 1, search: "", filters: null, list: null },
+      paginationParams: { totalPages: 0, perPage: 40, currentPage: 0, totalCount: 0 },
+      showWildCardFilter: false
+    });
   };
 
   const handleGlobalSearch = search => setState({ ...state, params: { ...params, page: 1, search } });
@@ -117,7 +138,11 @@ const Index = props => {
     setState({
       ...state,
       selectedUser: id,
-      infoTabsData: [{ label: "Basic Details", path: `/usersdemo/userinfo/${id}/basicdetails`, key: "basicdetails" }]
+      infoTabsData: [
+        { label: "Basic Details", path: `/usersdemo/userinfo/${id}/basicdetails`, key: "basicdetails" },
+        { label: "Assigned Buildings", path: `/usersdemo/userinfo/${id}/assignedbuilding`, key: "assignedbuilding" },
+        { label: "Assigned Building Logbooks", path: `/usersdemo/userinfo/${id}/assignedbuildinglogbook`, key: "assignedbuildinglogbook" }
+      ]
     });
     history.push(`/usersdemo/userinfo/${id}/${Params && Params.tab ? Params.tab : "basicdetails"}`);
   };
@@ -157,7 +182,6 @@ const Index = props => {
               paragraph={"This action cannot be reverted, are you sure that you need to delete this item ?"}
             />
           }
-          // onCancel={toggleShowFrequencyModal}
         />
       ) : null}
 
@@ -171,6 +195,10 @@ const Index = props => {
               showInfoPage={showInfoPage}
               getDataById={getData}
               deleteItem={deleteItemConfirm}
+              getLogData={getLogData}
+              logData={logData}
+              hasBuildingAssign={checkPermission("assign", "users", "buildings")}
+              hasLogbookAssign={checkPermission("assign", "users", "logbooks")}
             />
           ) : (
             <div className="list-area">

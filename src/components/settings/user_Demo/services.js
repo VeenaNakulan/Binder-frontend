@@ -9,3 +9,6 @@ export const deleteUsers = id => logbookGateWay.delete(`${serviceEndPoints.userE
 export const getUserPermissionDropdown = params =>
   logbookGateWay.get(`${serviceEndPoints.userPermissionEndPoints.getUserPermissions}/templates_dropdown`, { params });
 export const getExistingUsers = params => logbookGateWay.get(`${serviceEndPoints.userEndPoints.getUsers}/existing_email`, { params });
+export const getAllUsersLogs = (params, id) => {
+  return logbookGateWay.get(`${serviceEndPoints.userEndPoints.getUsers}/${id}/logs`, { params });
+};

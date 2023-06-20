@@ -154,3 +154,23 @@ export const deleteUsers = id => {
     }
   };
 };
+
+export const getAllUsersLogs = (params, id) => {
+  return async dispatch => {
+    try {
+      dispatch({ type: actionTypes.GET_ALL_USERS_LOG_REQUEST });
+      const res = await Service.getAllUsersLogs(params, id);
+      if (res && res.status === 200) {
+        if (res.data) {
+          dispatch({ type: actionTypes.GET_ALL_USERS_LOG_SUCCESS, response: res.data });
+        } else {
+          dispatch({ type: actionTypes.GET_ALL_USERS_LOG_FAILURE, error: res.data });
+        }
+      } else {
+        dispatch({ type: actionTypes.GET_ALL_USERS_LOG_FAILURE, error: res.data });
+      }
+    } catch (e) {
+      dispatch({ type: actionTypes.GET_ALL_USERS_LOG_FAILURE, error: e.response && e.response.data });
+    }
+  };
+};

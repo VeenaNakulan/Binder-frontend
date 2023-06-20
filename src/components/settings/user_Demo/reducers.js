@@ -7,7 +7,8 @@ const initialState = {
   userPermissionDropdownResponse: { permissions: [] },
   existingEmailResponse: {},
   editUsersByIdReducer: [],
-  deleteUser: []
+  deleteUser: [],
+  getAllUsersLogResponse: []
 };
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -118,6 +119,20 @@ export default (state = initialState, action) => {
       return {
         ...state,
         deleteUser: { success: false, ...action.error }
+      };
+    case actionTypes.GET_ALL_USERS_LOG_REQUEST:
+      return {
+        ...state
+      };
+    case actionTypes.GET_ALL_USERS_LOG_SUCCESS:
+      return {
+        ...state,
+        getAllUsersLogResponse: { success: true, ...action.response }
+      };
+    case actionTypes.GET_ALL_USERS_LOG_FAILURE:
+      return {
+        ...state,
+        getAllUsersLogResponse: { success: false, ...action.error }
       };
 
     default:

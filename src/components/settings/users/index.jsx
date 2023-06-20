@@ -310,7 +310,6 @@ class index extends Component {
 
   exportTable = async () => {
     let master_filters = JSON.parse(localStorage.getItem("master_filters"));
-    const { params } = this.state;
     await this.props.exportUsers({
       search: this.state.params.search,
       filters: this.state.params.filters,

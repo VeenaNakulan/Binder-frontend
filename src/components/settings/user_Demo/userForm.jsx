@@ -3,25 +3,23 @@ import { ToastContainer } from "react-toastify";
 import NumberFormat from "react-number-format";
 import ReactTooltip from "react-tooltip";
 import { Multiselect } from "multiselect-react-dropdown";
-import history from "../../../config/history";
 import ToastMsg from "../../common/ToastMessage";
 
 import TopSlider from "../../common/components/TopSlider";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserPermissionDropdown, addUsers, getExistingUsers, editUsersById, getUsersById, resetValue, deleteUsers } from "./actions";
+import { getUserPermissionDropdown, addUsers, getExistingUsers, editUsersById, getUsersById, resetValue } from "./actions";
 import action from "../actions";
-import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import { useHistory, useParams } from "react-router-dom/cjs/react-router-dom.min";
 import { reportsList } from "../../../config/utils";
-import _ from "lodash";
 
 let emailExp = /^\w+([\.-]?\w+)*@\w+([\.-]?(\.\w{2,3})+)*(\.\w{2,3})+$/;
 let passwordExp = /^(?=.{6,}$)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9])(?=.*?\W).*$/;
 
 const UserForm = props => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const { id } = useParams();
   const { consultancyDropdownData, clientDropdownData, roleDropdownData } = useSelector(({ settingsCommonReducer }) => settingsCommonReducer);
-
   const { userPermissionDropdownResponse, addUsersData, existingEmailResponse, editUsersByIdReducer, getUsersByid } = useSelector(
     ({ userdemoReducer }) => userdemoReducer
   );
@@ -102,35 +100,11 @@ const UserForm = props => {
         selectedImage: getUsersByid?.user?.image,
         formParams: {
           ...formParams,
-          name: id ? getUsersByid?.user?.name : "",
-          email: id ? getUsersByid?.user?.email : "",
-          password: "",
-          first_name: id ? getUsersByid?.user?.first_name : "",
-          last_name: id ? getUsersByid?.user?.last_name : "",
-          printed_name: id ? getUsersByid?.user?.printed_name : "",
-          title: id ? getUsersByid?.user?.title : "",
-          work_phone: id ? getUsersByid?.user?.work_phone : "",
-          cell_phone: id ? getUsersByid?.user?.cell_phone : "",
-          room_number: id ? getUsersByid?.user?.room_number : "",
-          room_name: id ? getUsersByid?.user?.room_name : "",
-          emergency_contact_no: id ? getUsersByid?.user?.emergency_contact_no : "",
-          emergency_contact_name: id ? getUsersByid?.user?.emergency_contact_name : "",
-          notes: id ? getUsersByid?.user?.notes : "",
-          address: id ? getUsersByid?.user?.address : "",
-          state: id ? getUsersByid?.user?.state : "",
-          city: id ? getUsersByid?.user?.city : "",
-          zip_code: id ? getUsersByid?.user?.zip_code : "",
-          department: id ? getUsersByid?.user?.department : "",
-          credentials: id ? getUsersByid?.user?.credentials : "",
-          location: id ? getUsersByid?.user?.location : "",
+          ...getUsersByid?.user,
           role_id: id ? getUsersByid?.user?.role?.id : "",
-          building_name: id ? getUsersByid?.user?.building_name : "",
-          cmms_username: id ? getUsersByid?.user?.cmms_username : "",
           consultancy_id: id ? getUsersByid?.user?.consultancy?.id : "",
           client_id: id ? getUsersByid?.user?.client?.id : "",
           image: null,
-          image_description: id ? getUsersByid?.user?.image_description : "",
-          password_confirm: "",
           permission_id: id ? getUsersByid?.user?.permission?.id : "",
           view_only: id ? getUsersByid?.user?.view_only : "no",
           is_active: id ? getUsersByid?.user?.is_active : "yes",
@@ -184,7 +158,10 @@ const UserForm = props => {
       "Threshold 3 Day End": 5,
       "Threshold 1 Day End": 6
     };
-    selectedReports = _.orderBy(selectedReports, item => rank[item.id]);
+    // selectedReports = _.orderBy(selectedReports, item => rank[item.id]);
+    selectedReports.sort((a, b) => {
+      return rank[a.id] - rank[b.id];
+    });
     setState({
       ...state,
       formParams: {
@@ -276,8 +253,7 @@ const UserForm = props => {
   };
 
   const cancelForm = () => {
-    if (id) history.push(`/usersdemo/userinfo/${id}/basicdetails`);
-    history.push("/usersdemo");
+    history.goBack();
   };
 
   const checkEmailExist = async () => {
@@ -385,13 +361,17 @@ const UserForm = props => {
 
   if (addUsersData.success) {
     ToastMsg(addUsersData.message, "info");
-    history.push("/usersdemo");
+    history.goBack();
     dispatch(resetValue());
   } else {
     if (editUsersByIdReducer.success) {
-      ToastMsg(editUsersByIdReducer.message, "info");
-      history.push("/usersdemo");
-      dispatch(resetValue());
+      if (props.location?.state?.fromInfo) {
+        history.goBack();
+      } else {
+        ToastMsg(editUsersByIdReducer.message, "info");
+        history.goBack();
+        dispatch(resetValue());
+      }
     }
   }
 
