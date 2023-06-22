@@ -10,7 +10,19 @@ import BuildingLogbook from "../userBuildingLogbook/index";
 const ViewUser = props => {
   const params = useParams();
   const { tab, id } = params;
-  const { infoTabsData, keys, config, getDataById, deleteItem, logData, getLogData, hasBuildingAssign, hasLogbookAssign } = props;
+  const {
+    infoTabsData,
+    keys,
+    config,
+    getDataById,
+    deleteItem,
+    logData,
+    getLogData,
+    hasBuildingAssign,
+    hasLogbookAssign,
+    updateBuildingAssignment,
+    updateBuildingLogbookAssignment
+  } = props;
 
   const [state, setState] = useState({ basicDetails: {}, isLogView: false, selectedLog: "", logChanges: "", showConfirmModalLog: false });
 
@@ -51,6 +63,8 @@ const ViewUser = props => {
             toggleViewPage={toggleViewPage}
             handleRestoreLog={handleRestoreLog}
             getLogData={getLogData}
+            updateBuildingAssignment={updateBuildingAssignment}
+            updateBuildingLogbookAssignment={updateBuildingLogbookAssignment}
           />
         ) : tab === "assignedbuilding" ? (
           <div className="infoPageContent">
@@ -59,7 +73,7 @@ const ViewUser = props => {
                 <h3>&nbsp;</h3>
                 {hasBuildingAssign ? (
                   <div className="btn-sec">
-                    <button className="btn">
+                    <button className="btn" onClick={() => updateBuildingAssignment(id)}>
                       <img src="/images/assign.svg" alt="" />
                       Assign Buildings
                     </button>

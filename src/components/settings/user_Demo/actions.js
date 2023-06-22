@@ -128,7 +128,7 @@ export const getUserPermissionDropdown = params => {
 export const resetValue = () => dispatch => {
   try {
     dispatch({
-      type: "CLEAR_DATA"
+      type: actionTypes.CLEAR_DATA
     });
   } catch (error) {
     console.log(error);
@@ -171,6 +171,39 @@ export const getAllUsersLogs = (params, id) => {
       }
     } catch (e) {
       dispatch({ type: actionTypes.GET_ALL_USERS_LOG_FAILURE, error: e.response && e.response.data });
+    }
+  };
+};
+
+export const exportUsers = params => {
+  return async dispatch => {
+    try {
+      dispatch({ type: actionTypes.EXPORT_USERS_TABLE_REQUEST });
+      const response = await Service.exportUsers(params);
+      if (response && response.data) {
+        const text = await new Response(response.data).text();
+        if (text && text.split('"')[1] === "error") {
+          dispatch({ type: actionTypes.EXPORT_USERS_TABLE_SUCCESS, response: { error: text.split('"')[3] } });
+          return true;
+        } else {
+          dispatch({ type: actionTypes.EXPORT_USERS_TABLE_SUCCESS, response: {} });
+        }
+      }
+      const { data } = response;
+      const name = response.headers["content-disposition"].split("filename=");
+      const fileName = name[1].split('"')[1];
+      const downloadUrl = window.URL.createObjectURL(new Blob([data]));
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.setAttribute("download", `${fileName}`); //any other extension
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (e) {
+      dispatch({
+        type: actionTypes.EXPORT_USERS_TABLE_FAILURE,
+        error: e.response && e.response.data
+      });
     }
   };
 };

@@ -4,7 +4,7 @@ import LoadingOverlay from "react-loading-overlay";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
 import history from "../../../config/history";
-import { deleteUsers, getUsers, getUsersById, getAllUsersLogs } from "./actions";
+import { deleteUsers, getUsers, getUsersById, getAllUsersLogs, exportUsers } from "./actions";
 import ToastMsg from "../../common/ToastMessage";
 import ConfirmationModal from "../../../components/common/components/ConfirmationModal";
 import Portal from "../../common/components/Portal";
@@ -15,7 +15,9 @@ import TableTopHeader from "../../../components/common/components/TableTopHeader
 import { userTableData } from "./components/tableConfig";
 import Pagination from "../../../components/common/components/Pagination";
 import ViewUser from "./viewUser";
-import { checkPermission } from "../../../config/utils";
+import ViewModal from "../../common/components/ViewModal";
+import UpdateBuildingAssignmentModal from "./assigned_components/UpdateBuildingAssignmentModal";
+import UpdateBuildingLogbookAssignmentModal from "./assigned_components/UpdateBuildingLogbookAssignmentModal";
 
 const Index = props => {
   const dispatch = useDispatch();
@@ -31,9 +33,21 @@ const Index = props => {
     infoTabsData: [],
     showConfirmation: false,
     logData: { count: "", data: [] },
-    selectedItem: null
+    selectedItem: null,
+    showUpdateBuildingAssignmentModal: false,
+    showUpdateBuildingLogbookAssignmentModal: false
   });
-  const { params, paginationParams, showWildCardFilter, infoTabsData, showConfirmation, logData } = state;
+  const {
+    params,
+    paginationParams,
+    showWildCardFilter,
+    infoTabsData,
+    showConfirmation,
+    logData,
+    showUpdateBuildingAssignmentModal,
+    selectedItem,
+    showUpdateBuildingLogbookAssignmentModal
+  } = state;
 
   const { usersData, deleteUser, getAllUsersLogResponse } = useSelector(({ userdemoReducer }) => userdemoReducer);
 
@@ -53,20 +67,8 @@ const Index = props => {
     getUser();
   }, [params]);
 
-  const getLogData = id => {
-    dispatch(getAllUsersLogs(params, id));
-  };
-
   useEffect(() => {
-    const { logs, count } = getAllUsersLogResponse;
-    setState({
-      ...state,
-      logData: { ...logData, data: logs }
-    });
-  }, [getAllUsersLogResponse]);
-
-  useEffect(() => {
-    if (usersData?.success) {
+    if (usersData && usersData?.success) {
       setIsLoading(false);
       setState(prevState => ({
         ...prevState,
@@ -86,6 +88,16 @@ const Index = props => {
       dispatch(getUsers());
     }
   }, [deleteUser]);
+
+  const getLogData = id => {
+    dispatch(getAllUsersLogs(params, id));
+  };
+
+  useEffect(() => {
+    if (getAllUsersLogResponse?.logs) {
+      setState({ ...state, logData: { ...logData, data: getAllUsersLogResponse?.logs } });
+    }
+  }, [getAllUsersLogResponse]);
 
   const showAddForm = () => {
     setState({ ...state, selectedUser: null });
@@ -170,6 +182,47 @@ const Index = props => {
     dispatch(deleteUsers(state.selectedUser));
   };
 
+  const exportTable = () => {
+    let master_filters = JSON.parse(localStorage.getItem("master_filters"));
+    dispatch(
+      exportUsers({
+        search: params?.search,
+        filters: params?.filters,
+        list: params?.list,
+        order: params?.order,
+        ...master_filters
+      })
+    );
+  };
+  const showViewModal = () => {
+    setState({ ...state, showViewModal: true });
+  };
+
+  const handleHideColumn = keyItem => {
+    if (keyItem !== "selectAll" && keyItem !== "deselectAll") {
+      userTableData.config[keyItem] = { ...userTableData?.config[keyItem], isVisible: !userTableData?.config[keyItem].isVisible };
+    } else {
+      let tempConfig = { ...userTableData?.config };
+      userTableData?.keys.forEach(item => {
+        if (keyItem === "selectAll") {
+          tempConfig[item].isVisible = true;
+        } else {
+          tempConfig[item].isVisible = false;
+        }
+      });
+      userTableData.config = tempConfig;
+    }
+    return true;
+  };
+
+  const updateBuildingAssignment = selectedItem => {
+    setState({ ...state, selectedItem, showUpdateBuildingAssignmentModal: !showUpdateBuildingAssignmentModal });
+  };
+
+  const updateBuildingLogbookAssignment = selectedItem => {
+    setState({ ...state, selectedItem, showUpdateBuildingLogbookAssignmentModal: !showUpdateBuildingLogbookAssignmentModal });
+  };
+
   return (
     <React.Fragment>
       {showConfirmation ? (
@@ -185,6 +238,46 @@ const Index = props => {
         />
       ) : null}
 
+      {state.showViewModal ? (
+        <Portal
+          body={
+            <ViewModal
+              keys={userTableData?.keys}
+              config={userTableData.config}
+              handleHideColumn={handleHideColumn}
+              onCancel={() => setState({ ...state, showViewModal: false })}
+            />
+          }
+          onCancel={() => setState({ ...state, showViewModal: false })}
+        />
+      ) : null}
+
+      {showUpdateBuildingAssignmentModal ? (
+        <Portal
+          body={
+            <UpdateBuildingAssignmentModal
+              user_id={selectedItem}
+              onCancel={() => setState({ ...state, showUpdateBuildingAssignmentModal: !showUpdateBuildingAssignmentModal })}
+              onOk={deleteItem}
+            />
+          }
+          onCancel={() => setState({ ...state, showUpdateBuildingAssignmentModal: !showUpdateBuildingAssignmentModal })}
+        />
+      ) : null}
+
+      {showUpdateBuildingLogbookAssignmentModal ? (
+        <Portal
+          body={
+            <UpdateBuildingLogbookAssignmentModal
+              user_id={selectedItem}
+              onCancel={() => setState({ ...state, showUpdateBuildingLogbookAssignmentModal: !showUpdateBuildingLogbookAssignmentModal })}
+              onOk={deleteItem}
+            />
+          }
+          onCancel={() => setState({ ...state, showUpdateBuildingLogbookAssignmentModal: !showUpdateBuildingLogbookAssignmentModal })}
+        />
+      ) : null}
+
       <section className="cont-ara">
         <LoadingOverlay active={isLoading} spinner={<Loader />}>
           {section === "userinfo" ? (
@@ -197,8 +290,8 @@ const Index = props => {
               deleteItem={deleteItemConfirm}
               getLogData={getLogData}
               logData={logData}
-              hasBuildingAssign={checkPermission("assign", "users", "buildings")}
-              hasLogbookAssign={checkPermission("assign", "users", "logbooks")}
+              updateBuildingLogbookAssignment={updateBuildingLogbookAssignment}
+              updateBuildingAssignment={updateBuildingAssignment}
             />
           ) : (
             <div className="list-area">
@@ -211,11 +304,13 @@ const Index = props => {
                     addItem={showAddForm}
                     toggleFilter={() => setState({ ...state, showWildCardFilter: !showWildCardFilter })}
                     resetAllFilters={resetAllFilters}
+                    showViewModal={showViewModal}
                     showWildCardFilter={showWildCardFilter}
                     resetWildCardFilter={resetWildCardFilter}
                     handleGlobalSearch={handleGlobalSearch}
                     globalSearchKey={params?.search}
                     resetSort={resetSort}
+                    exportTable={exportTable}
                   />
                   <div className="list-sec">
                     <div className="table-section">
@@ -229,6 +324,8 @@ const Index = props => {
                         updateTableSortFilters={updateTableSortFilters}
                         editItem={showEditPage}
                         deleteItem={deleteItemConfirm}
+                        updateBuildingAssignment={updateBuildingAssignment}
+                        updateBuildingLogbookAssignment={updateBuildingLogbookAssignment}
                       />
                     </div>
                   </div>

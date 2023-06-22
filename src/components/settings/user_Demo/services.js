@@ -12,3 +12,5 @@ export const getExistingUsers = params => logbookGateWay.get(`${serviceEndPoints
 export const getAllUsersLogs = (params, id) => {
   return logbookGateWay.get(`${serviceEndPoints.userEndPoints.getUsers}/${id}/logs`, { params });
 };
+export const exportUsers = params =>
+  logbookGateWay.get(`${serviceEndPoints.userEndPoints.getUsers}/export_xl`, { method: "GET", responseType: "blob", params });

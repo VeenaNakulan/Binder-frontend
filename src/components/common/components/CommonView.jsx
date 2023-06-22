@@ -272,7 +272,7 @@ class CommonView extends Component {
                     </button>
                   ) : null}
                   {hasBuildingAssign ? (
-                    <button className="btn" onClick={() => updateBuildingAssignment(this.props.match.params.id)}>
+                    <button className="btn" onClick={() => updateBuildingAssignment(this.props.match?.params?.id)}>
                       <img src={`/images/${"add-icon.svg"}`} alt="" />
                       Assign Buildings
                     </button>

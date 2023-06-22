@@ -11,6 +11,7 @@ import { getUserPermissionDropdown, addUsers, getExistingUsers, editUsersById, g
 import action from "../actions";
 import { useHistory, useParams } from "react-router-dom/cjs/react-router-dom.min";
 import { reportsList } from "../../../config/utils";
+import _ from "lodash";
 
 let emailExp = /^\w+([\.-]?\w+)*@\w+([\.-]?(\.\w{2,3})+)*(\.\w{2,3})+$/;
 let passwordExp = /^(?=.{6,}$)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9])(?=.*?\W).*$/;
@@ -68,12 +69,7 @@ const UserForm = props => {
       reports: [],
       escalation: []
     },
-    errorParams: {
-      name: false,
-      role_id: false,
-      consultancy_id: false,
-      confirmPassword: false
-    },
+    errorParams: { name: false, role_id: false, consultancy_id: false, confirmPassword: false },
     showErrorBorder: false,
     showConfirmModal: false,
     confirmPasswordErrorMessage: "",
@@ -126,10 +122,7 @@ const UserForm = props => {
   };
 
   const selectConsultancyId = value => {
-    setState(prevState => ({
-      ...prevState,
-      formParams: { ...prevState.formParams, consultancy_id: value, permission_id: "" }
-    }));
+    setState(prevState => ({ ...prevState, formParams: { ...prevState.formParams, consultancy_id: value, permission_id: "" } }));
     dispatch(action.getClientDropdown({ consultancy_id: value }));
     dispatch(getUserPermissionDropdown({ consultancy_id: value }));
     setState(prevState => ({
@@ -158,33 +151,15 @@ const UserForm = props => {
       "Threshold 3 Day End": 5,
       "Threshold 1 Day End": 6
     };
-    // selectedReports = _.orderBy(selectedReports, item => rank[item.id]);
-    selectedReports.sort((a, b) => {
-      return rank[a.id] - rank[b.id];
-    });
-    setState({
-      ...state,
-      formParams: {
-        ...formParams,
-        reports: selectedReports
-      },
-      escalationsList: selectedReports
-    });
+    selectedReports = _.orderBy(selectedReports, item => rank[item.id]);
+
+    setState({ ...state, formParams: { ...formParams, reports: selectedReports }, escalationsList: selectedReports });
   };
 
   const onReportRemove = selectedReports => {
-    let tempEscalations = [];
-    if (formParams.escalation.length) {
-      let tempSelectedReports = selectedReports?.length ? selectedReports.map(item => item.id) : [];
-      if (tempSelectedReports.length) {
-        tempEscalations = formParams.escalation.filter(item => tempSelectedReports.includes(item.id));
-      }
-    }
-    setState({
-      ...state,
-      formParams: { ...formParams, reports: selectedReports, escalation: tempEscalations },
-      escalationsList: selectedReports
-    });
+    const tempSelectedReports = selectedReports?.map(item => item.id) || [];
+    const tempEscalations = formParams.escalation.filter(item => tempSelectedReports.includes(item.id));
+    setState({ ...state, formParams: { ...formParams, reports: selectedReports, escalation: tempEscalations }, escalationsList: selectedReports });
   };
 
   const onEscalationSelect = selectedEscalations => {
@@ -196,9 +171,7 @@ const UserForm = props => {
   };
 
   const validate = () => {
-    let errorParams = {
-      name: false
-    };
+    let errorParams = { name: false };
     let showErrorBorder = false;
     let confirmPasswordErrorMessage = "";
     if (!formParams?.name || !formParams?.name.trim().length) {
@@ -242,11 +215,7 @@ const UserForm = props => {
       showErrorBorder = true;
       errorParams.confirmPassword = false;
     }
-    setState({
-      showErrorBorder,
-      errorParams,
-      confirmPasswordErrorMessage
-    });
+    setState({ showErrorBorder, errorParams, confirmPasswordErrorMessage });
 
     if (showErrorBorder) return false;
     return true;
@@ -256,9 +225,10 @@ const UserForm = props => {
     history.goBack();
   };
 
-  const checkEmailExist = async () => {
-    if (formParams.email.trim().length && emailExp.test(formParams?.email.trim())) {
-      dispatch(getExistingUsers({ email: formParams?.email }));
+  const checkEmailExist = () => {
+    const trimmedEmail = formParams?.email.trim();
+    if (trimmedEmail.length && emailExp.test(trimmedEmail)) {
+      dispatch(getExistingUsers({ email: trimmedEmail }));
       if (existingEmailResponse && existingEmailResponse?.result) {
         ToastMsg("User Already Exists!", "error");
       }
@@ -266,6 +236,20 @@ const UserForm = props => {
   };
 
   const handleAddAttachment = e => setState({ ...state, formParams: { ...formParams, image: e.target.files[0] } });
+
+  useEffect(() => {
+    if (addUsersData.success) {
+      ToastMsg(addUsersData.message, "info");
+      history.goBack();
+      dispatch(resetValue());
+    } else {
+      if (editUsersByIdReducer?.success) {
+        ToastMsg(editUsersByIdReducer?.message, "info");
+        history.goBack();
+        dispatch(resetValue());
+      }
+    }
+  }, [addUsersData, editUsersByIdReducer]);
 
   const handleSubmitUser = () => {
     if (id) {
@@ -358,22 +342,6 @@ const UserForm = props => {
       }
     }
   };
-
-  if (addUsersData.success) {
-    ToastMsg(addUsersData.message, "info");
-    history.goBack();
-    dispatch(resetValue());
-  } else {
-    if (editUsersByIdReducer.success) {
-      if (props.location?.state?.fromInfo) {
-        history.goBack();
-      } else {
-        ToastMsg(editUsersByIdReducer.message, "info");
-        history.goBack();
-        dispatch(resetValue());
-      }
-    }
-  }
 
   return (
     <section className="cont-ara act-main">
@@ -468,7 +436,7 @@ const UserForm = props => {
                             <label className={showErrorBorder && errorParams.password ? "text-red" : ""}>
                               Password *
                               <span
-                                class="material-icons"
+                                className="material-icons"
                                 data-multiline={true}
                                 data-tip={
                                   "Password must contain minimum 6 characters , 1 Special character , 1 number & Combination of upper and lower case letters"
@@ -785,7 +753,7 @@ const UserForm = props => {
                               placeholder="Zip Code"
                               onValueChange={values => {
                                 const { value } = values;
-                                setState({ ...state, formParams: { ...formParams, room_number: value } });
+                                setState({ ...state, formParams: { ...formParams, zip_code: value } });
                               }}
                             />
                           </div>
