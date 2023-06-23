@@ -4,7 +4,7 @@ import LoadingOverlay from "react-loading-overlay";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
 import history from "../../../config/history";
-import { deleteUsers, getUsers, getUsersById, getAllUsersLogs, exportUsers } from "./actions";
+import { deleteUsers, getUsers, getUsersById, getAllUsersLogs, exportUsers, deleteUsersLog, restoreUsersLog } from "./actions";
 import ToastMsg from "../../common/ToastMessage";
 import ConfirmationModal from "../../../components/common/components/ConfirmationModal";
 import Portal from "../../common/components/Portal";
@@ -29,13 +29,17 @@ const Index = props => {
     selectedUser: "",
     params: { limit: 20, page: 1, filters: null, search: "", offset: 0, list: null, order: null },
     paginationParams: { perPage: 20, currentPage: 0, totalCount: 0, totalPages: 0 },
+    historyParams: { limit: 40, page: 1, search: "", order: null },
+    historyPaginationParams: { totalPages: 0, perPage: 40, currentPage: 0, totalCount: 0 },
     showWildCardFilter: false,
     infoTabsData: [],
     showConfirmation: false,
     logData: { count: "", data: [] },
     selectedItem: null,
     showUpdateBuildingAssignmentModal: false,
-    showUpdateBuildingLogbookAssignmentModal: false
+    showUpdateBuildingLogbookAssignmentModal: false,
+    showConfirmModalLog: false,
+    selectedLog: ""
   });
   const {
     params,
@@ -90,8 +94,21 @@ const Index = props => {
   }, [deleteUser]);
 
   const getLogData = id => {
-    dispatch(getAllUsersLogs(params, id));
+    dispatch(getAllUsersLogs(state.historyParams, id));
+    setState({
+      ...state,
+      logData: { ...logData, data: getAllUsersLogResponse?.logs },
+      historyPaginationParams: {
+        ...state.historyPaginationParams,
+        totalCount: getAllUsersLogResponse?.count,
+        totalPages: Math.ceil(getAllUsersLogResponse?.count / state.historyPaginationParams.perPage)
+      }
+    });
   };
+
+  useEffect(() => {
+    getLogData(Params.id);
+  }, [state.historyParams]);
 
   useEffect(() => {
     if (getAllUsersLogResponse?.logs) {
@@ -223,6 +240,43 @@ const Index = props => {
     setState({ ...state, selectedItem, showUpdateBuildingLogbookAssignmentModal: !showUpdateBuildingLogbookAssignmentModal });
   };
 
+  const handleDeleteLog = (id, choice) => {
+    setState(prevState => ({ ...prevState, showConfirmModalLog: true, selectedLog: id }));
+    if (state.selectedLog) {
+      dispatch(deleteUsersLog(state.selectedLog));
+      getLogData(Params.id);
+      ToastMsg("Logdata deleted");
+      setState(prevState => ({ ...prevState, showConfirmModalLog: false, selectedLog: null }));
+    }
+  };
+
+  const updateLogSortFilters = searchKey => {
+    if (state.historyParams.order) {
+      setState({
+        ...state,
+        historyParams: {
+          ...state.historyParams,
+          order: { ...state.historyParams.order, [searchKey]: state.historyParams.order[searchKey] === "desc" ? "asc" : "desc" }
+        }
+      });
+    } else {
+      setState({ ...state, historyParams: { ...state.historyParams, order: { [searchKey]: "asc" } } });
+    }
+  };
+
+  const handleGlobalSearchHistory = search => {
+    setState({
+      ...state,
+      historyParams: { ...state.historyParams, page: 1, search },
+      historyPaginationParams: { ...state.historyPaginationParams, currentPage: 0 }
+    });
+  };
+
+  const handleRestoreLog = async id => {
+    dispatch(restoreUsersLog(id));
+    dispatch(getUsers());
+  };
+
   return (
     <React.Fragment>
       {showConfirmation ? (
@@ -278,6 +332,20 @@ const Index = props => {
         />
       ) : null}
 
+      {state.showConfirmModalLog ? (
+        <Portal
+          body={
+            <ConfirmationModal
+              heading={"Do you want to delete this log?"}
+              paragraph={"This action cannot be reverted, are you sure that you need to delete this item?"}
+              onCancel={() => setState({ ...state, showConfirmModalLog: false })}
+              onOk={handleDeleteLog}
+            />
+          }
+          onCancel={() => setState({ ...state, showConfirmModalLog: false })}
+        />
+      ) : null}
+
       <section className="cont-ara">
         <LoadingOverlay active={isLoading} spinner={<Loader />}>
           {section === "userinfo" ? (
@@ -292,6 +360,13 @@ const Index = props => {
               logData={logData}
               updateBuildingLogbookAssignment={updateBuildingLogbookAssignment}
               updateBuildingAssignment={updateBuildingAssignment}
+              handleDeleteLog={handleDeleteLog}
+              historyParams={state.historyParams}
+              historyPaginationParams={state.historyPaginationParams}
+              updateLogSortFilters={updateLogSortFilters}
+              handleGlobalSearchHistory={handleGlobalSearchHistory}
+              globalSearchKeyHistory={state.historyParams && state.historyParams.search ? state.historyParams.search : ""}
+              HandleRestoreLog={handleRestoreLog}
             />
           ) : (
             <div className="list-area">

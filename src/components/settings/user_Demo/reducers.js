@@ -8,7 +8,9 @@ const initialState = {
   existingEmailResponse: {},
   editUsersByIdReducer: [],
   deleteUser: [],
-  getAllUsersLogResponse: []
+  getAllUsersLogResponse: [],
+  deleteUsersLogResponse: {},
+  restoreUsersLogResponse: {}
 };
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -133,6 +135,34 @@ export default (state = initialState, action) => {
       return {
         ...state,
         getAllUsersLogResponse: { success: false, ...action.error }
+      };
+    case actionTypes.DELETE_USERS_LOG_REQUEST:
+      return {
+        ...state
+      };
+    case actionTypes.DELETE_USERS_LOG_SUCCESS:
+      return {
+        ...state,
+        deleteUsersLogResponse: { success: true, ...action.response }
+      };
+    case actionTypes.DELETE_USERS_LOG_FAILURE:
+      return {
+        ...state,
+        deleteUsersLogResponse: { success: false, ...action.error }
+      };
+    case actionTypes.RESTORE_USERS_LOG_REQUEST:
+      return {
+        ...state
+      };
+    case actionTypes.RESTORE_USERS_LOG_SUCCESS:
+      return {
+        ...state,
+        restoreUsersLogResponse: { success: true, ...action.response }
+      };
+    case actionTypes.RESTORE_USERS_LOG_FAILURE:
+      return {
+        ...state,
+        restoreUsersLogResponse: { success: false, ...action.error }
       };
 
     default:

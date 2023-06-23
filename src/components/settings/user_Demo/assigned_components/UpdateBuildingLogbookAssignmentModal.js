@@ -25,8 +25,6 @@ const UpdateBuildingLogbookAssignmentModal = props => {
     user: null,
     available_building_logbooks: [],
     initial_assigned_building_logbooks: [],
-    consultancy_users: [],
-    currentAssignments: [],
     user_ids: [],
     showConfirmation: false,
     availableSearchKey: "",
@@ -38,8 +36,6 @@ const UpdateBuildingLogbookAssignmentModal = props => {
     showCurrentAssignmentModal,
     user,
     activeTab,
-    consultancy_users,
-    currentAssignments,
     user_ids,
     showConfirmation,
     availableSearchKey,
@@ -104,35 +100,25 @@ const UpdateBuildingLogbookAssignmentModal = props => {
   };
 
   const searchInAvailable = availableSearchKey => {
-    let assignedBuildingLogbookIds = assigned_building_logbooks?.map(item => item.id);
+    const assignedBuildingLogbookIds = assigned_building_logbooks?.map(item => item.id);
     let result = available_building_logbooks.filter(item => !assignedBuildingLogbookIds.includes(item.id));
-    if (availableSearchKey.trim().length) {
-      result = result.filter(
-        ({ building, campus, client, deeming_agency, name, sector }) =>
-          (building && building.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (client && client.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (deeming_agency && deeming_agency.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (sector && sector.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (campus && campus.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (name && name.toLowerCase().includes(availableSearchKey.toLowerCase()))
+
+    const searchKey = availableSearchKey.trim().toLowerCase();
+    if (searchKey.length) {
+      result = result.filter(({ building, campus, client, deeming_agency, name, sector }) =>
+        [building, campus, client, deeming_agency, name, sector].some(value => value && value.toLowerCase().includes(searchKey))
       );
     }
+
     setState({ ...state, availableSearchKey, available_building_logbooks: result });
   };
-
   const searchInAssigned = async assignedSearchKey => {
     let availableBuildingIds = available_building_logbooks?.map(item => item.id);
     let result = assigned_building_logbooks.filter(item => !availableBuildingIds.includes(item.id));
-
-    if (assignedSearchKey.trim().length) {
-      result = result.filter(
-        ({ building, client, deeming_agency, sector, campus, name }) =>
-          (building && building.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (client && client.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (deeming_agency && deeming_agency.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (sector && sector.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (campus && campus.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (name && name.toLowerCase().includes(assignedSearchKey.toLowerCase()))
+    const searchKey = assignedSearchKey.trim().toLowerCase();
+    if (searchKey.length) {
+      result = result.filter(({ building, client, deeming_agency, sector, campus, name }) =>
+        [building, client, deeming_agency, sector, campus, name].some(value => value && value.toLowerCase().includes(searchKey))
       );
     }
     setState({ ...state, assignedSearchKey, assigned_building_logbooks: result });
@@ -369,10 +355,25 @@ const UpdateBuildingLogbookAssignmentModal = props => {
             </div>
           </div>
         </div>
+
         {showConfirmation ? (
           <Portal
             body={<ConfirmationModal onCancel={togglShowConfirmation} onOk={onUpdateUsersConfirm} heading={"Update Assignment?"} />}
             onCancel={togglShowConfirmation}
+          />
+        ) : null}
+
+        {showCancelConfirmModal ? (
+          <Portal
+            body={
+              <ConfirmationModal
+                heading={"Do you want to clear and lose all changes?"}
+                paragraph={"This action cannot be reverted, are you sure that you need to cancel?"}
+                onCancel={() => setState({ ...state, showCancelConfirmModal: false })}
+                onOk={cancelModal}
+              />
+            }
+            onCancel={() => setState({ ...state, showCancelConfirmModal: false })}
           />
         ) : null}
       </div>

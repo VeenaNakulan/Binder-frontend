@@ -48,7 +48,8 @@ const UpdateBuildingAssignmentModal = props => {
     }
     return true;
   };
-  const searchInAvailable = async availableSearchKey => {
+
+  const searchInAvailable = availableSearchKey => {
     let assignedBuildingIds = assigned_buildings?.map(item => item.id);
     let result = available_buildings?.filter(item => !assignedBuildingIds?.includes(item.id));
     if (availableSearchKey.trim().length) {

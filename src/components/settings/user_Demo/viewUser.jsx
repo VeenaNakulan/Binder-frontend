@@ -6,9 +6,14 @@ import CommonViewTabs from "../../common/components/CommonViewTabs";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 import Buildings from "../userBuilding/index";
 import BuildingLogbook from "../userBuildingLogbook/index";
+import ConfirmationModal from "../../../components/common/components/ConfirmationModal";
+import Portal from "../../common/components/Portal";
+import { useSelector } from "react-redux";
 
 const ViewUser = props => {
   const params = useParams();
+  const { restoreUsersLogResponse } = useSelector(({ userdemoReducer }) => userdemoReducer);
+
   const { tab, id } = params;
   const {
     infoTabsData,
@@ -21,20 +26,36 @@ const ViewUser = props => {
     hasBuildingAssign,
     hasLogbookAssign,
     updateBuildingAssignment,
-    updateBuildingLogbookAssignment
+    updateBuildingLogbookAssignment,
+    handleDeleteLog,
+    updateLogSortFilters,
+    historyPaginationParams,
+    historyParams,
+    handleGlobalSearchHistory,
+    globalSearchKeyHistory,
+    HandleRestoreLog
   } = props;
 
-  const [state, setState] = useState({ basicDetails: {}, isLogView: false, selectedLog: "", logChanges: "", showConfirmModalLog: false });
-
+  const [state, setState] = useState({
+    basicDetails: {},
+    isLogView: false,
+    selectedLog: "",
+    logChanges: "",
+    showConfirmModalLog: false
+  });
+  const fetchData = async () => {
+    const userData = await getDataById(id);
+    if (userData) {
+      setState({ ...state, basicDetails: userData.user });
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      const userData = await getDataById(id);
-      if (userData) {
-        setState({ ...state, basicDetails: userData.user });
-      }
-    };
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if (restoreUsersLogResponse.success) fetchData();
+  }, [restoreUsersLogResponse]);
 
   const goBack = () => {
     history.push("/usersdemo");
@@ -44,6 +65,28 @@ const ViewUser = props => {
   };
   const handleRestoreLog = (id, changes) => {
     setState({ ...state, showConfirmModalLog: true, selectedLog: id, logChanges: changes });
+  };
+
+  const refreshinfoDetails = async () => {
+    const { user } = await getDataById(id);
+    if (user && user?.success)
+      setState({
+        ...state,
+        basicDetails: {
+          ...state.basicDetails,
+          role_id: user?.role?.id,
+          consultancy_id: user?.consultancy?.id,
+          client_id: user?.client?.id,
+          permission_id: user?.permission?.id
+        }
+      });
+    return true;
+  };
+
+  const restoreLogOnConfirm = () => {
+    HandleRestoreLog(state.selectedLog);
+    setState({ ...state, showConfirmModalLog: false, selectedLog: null, isLogView: false });
+    refreshinfoDetails();
   };
 
   return (
@@ -65,6 +108,12 @@ const ViewUser = props => {
             getLogData={getLogData}
             updateBuildingAssignment={updateBuildingAssignment}
             updateBuildingLogbookAssignment={updateBuildingLogbookAssignment}
+            handleDeleteLog={handleDeleteLog}
+            historyPaginationParams={historyPaginationParams}
+            updateLogSortFilters={updateLogSortFilters}
+            historyParams={historyParams}
+            handleGlobalSearchHistory={handleGlobalSearchHistory}
+            globalSearchKeyHistory={globalSearchKeyHistory}
           />
         ) : tab === "assignedbuilding" ? (
           <div className="infoPageContent">
@@ -100,6 +149,23 @@ const ViewUser = props => {
               <BuildingLogbook />
             </div>
           </div>
+        ) : null}
+
+        {state.showConfirmModalLog ? (
+          <Portal
+            body={
+              <ConfirmationModal
+                heading={"Do you want to restore this log?"}
+                paragraph={state.logChanges}
+                onCancel={() => setState({ ...state, showConfirmModalLog: false })}
+                onOk={restoreLogOnConfirm}
+                isRestore={true}
+                type={"restore"}
+                isLogRestore={true}
+              />
+            }
+            onCancel={() => setState({ ...state, showConfirmModalLog: false })}
+          />
         ) : null}
       </div>
     </React.Fragment>

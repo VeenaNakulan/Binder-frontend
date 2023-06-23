@@ -207,3 +207,43 @@ export const exportUsers = params => {
     }
   };
 };
+
+export const deleteUsersLog = id => {
+  return async dispatch => {
+    try {
+      dispatch({ type: actionTypes.DELETE_USERS_LOG_REQUEST });
+      const res = await Service.deleteUsersLog(id);
+      if (res && res.status === 200) {
+        if (res.data) {
+          dispatch({ type: actionTypes.DELETE_USERS_LOG_SUCCESS, response: res.data });
+        } else {
+          dispatch({ type: actionTypes.DELETE_USERS_LOG_FAILURE, error: res.data });
+        }
+      } else {
+        dispatch({ type: actionTypes.DELETE_USERS_LOG_FAILURE, error: res.data });
+      }
+    } catch (e) {
+      dispatch({ type: actionTypes.DELETE_USERS_LOG_FAILURE, error: e.response && e.response.data });
+    }
+  };
+};
+
+export const restoreUsersLog = id => {
+  return async dispatch => {
+    try {
+      dispatch({ type: actionTypes.RESTORE_USERS_LOG_REQUEST });
+      const res = await Service.restoreUsersLog(id);
+      if (res && res.status === 200) {
+        if (res.data) {
+          dispatch({ type: actionTypes.RESTORE_USERS_LOG_SUCCESS, response: res.data });
+        } else {
+          dispatch({ type: actionTypes.RESTORE_USERS_LOG_FAILURE, error: res.data });
+        }
+      } else {
+        dispatch({ type: actionTypes.RESTORE_USERS_LOG_FAILURE, error: res.data });
+      }
+    } catch (e) {
+      dispatch({ type: actionTypes.RESTORE_USERS_LOG_FAILURE, error: e.response && e.response.data });
+    }
+  };
+};
