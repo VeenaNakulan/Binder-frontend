@@ -162,8 +162,8 @@ class UpdateUseruserAssigmentModal extends Component {
   updateAssignedList = async (type, id) => {
     const { assigned_building_logbooks, available_building_logbooks } = this.state;
     let itemObj = {};
-    let tempAssignedBuildingLogbooks = assigned_building_logbooks;
-    let tempAvailableBuildingLogbooks = available_building_logbooks;
+    let tempAssignedBuildingLogbooks = available_building_logbooks;
+    let tempAvailableBuildingLogbooks = assigned_building_logbooks;
     let tempLogbookIds = [];
 
     if (id === "all") {

@@ -9,6 +9,7 @@ import BuildingLogbook from "../userBuildingLogbook/index";
 import ConfirmationModal from "../../../components/common/components/ConfirmationModal";
 import Portal from "../../common/components/Portal";
 import { useSelector } from "react-redux";
+import AssignedBuildingLogbook from "./assigned_components/AssignedBuildingLogbook";
 
 const ViewUser = props => {
   const params = useParams();
@@ -54,7 +55,7 @@ const ViewUser = props => {
   }, [id]);
 
   useEffect(() => {
-    if (restoreUsersLogResponse.success) fetchData();
+    if (restoreUsersLogResponse?.success) fetchData();
   }, [restoreUsersLogResponse]);
 
   const goBack = () => {
@@ -146,7 +147,8 @@ const ViewUser = props => {
                   </div>
                 ) : null}
               </div>
-              <BuildingLogbook />
+              <AssignedBuildingLogbook />
+              {/* <BuildingLogbook /> */}
             </div>
           </div>
         ) : null}

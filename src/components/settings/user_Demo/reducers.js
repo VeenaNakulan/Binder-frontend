@@ -10,7 +10,8 @@ const initialState = {
   deleteUser: [],
   getAllUsersLogResponse: [],
   deleteUsersLogResponse: {},
-  restoreUsersLogResponse: {}
+  restoreUsersLogResponse: {},
+  userBuildingLogbookData: []
 };
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -103,7 +104,7 @@ export default (state = initialState, action) => {
         ...state,
         editUsersByIdReducer: { success: false, ...action.error }
       };
-    case "CLEAR_DATA":
+    case actionTypes.CLEAR_DATA:
       return {
         editUsersByIdReducer: {},
         addUsersData: {}
@@ -164,7 +165,20 @@ export default (state = initialState, action) => {
         ...state,
         restoreUsersLogResponse: { success: false, ...action.error }
       };
-
+    case actionTypes.GET_USER_BUILDING_LOGBOOK_REQUEST:
+      return {
+        ...state
+      };
+    case actionTypes.GET_USER_BUILDING_LOGBOOK_SUCCESS:
+      return {
+        ...state,
+        userBuildingLogbookData: { success: true, ...action.response }
+      };
+    case actionTypes.GET_USER_BUILDING_LOGBOOK_FAILURE:
+      return {
+        ...state,
+        userBuildingLogbookData: { success: false, ...action.error }
+      };
     default:
       return state;
   }

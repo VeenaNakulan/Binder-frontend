@@ -19,6 +19,8 @@ const UpdateBuildingAssignmentModal = props => {
     activeTab: 1,
     showCurrentAssignmentModal: false,
     user: null,
+    available_buildings: [],
+    assigned_buildings: [],
     initial_assigned_buildings: [],
     consultancy_users: [],
     currentAssignments: [],
@@ -33,15 +35,20 @@ const UpdateBuildingAssignmentModal = props => {
 
   useEffect(() => {
     getAssignBuildingLogbookForUserPopupDetails();
+  }, [getAssignBuildingToUserPopupDetailsResponse]);
+
+  useEffect(() => {
+    dispatch(actions.getAssignBuildingToUserPopupDetails(user_id));
   }, []);
 
   const getAssignBuildingLogbookForUserPopupDetails = async () => {
-    dispatch(actions.getAssignBuildingToUserPopupDetails(user_id));
     const { user, success } = getAssignBuildingToUserPopupDetailsResponse;
     if (success) {
       setState({
         ...state,
         user,
+        available_buildings,
+        assigned_buildings,
         initial_assigned_buildings: assigned_buildings.map(item => item.id),
         user_ids: assigned_buildings.map(item => item.id)
       });
@@ -50,20 +57,34 @@ const UpdateBuildingAssignmentModal = props => {
   };
 
   const searchInAvailable = availableSearchKey => {
+    const { assigned_buildings } = state;
     let assignedBuildingIds = assigned_buildings?.map(item => item.id);
     let result = available_buildings?.filter(item => !assignedBuildingIds?.includes(item.id));
-    if (availableSearchKey.trim().length) {
-      result = result.filter(
-        ({ consultancy, client, deeming_agency, sector, campus, name }) =>
-          (consultancy && consultancy.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (client && client.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (deeming_agency && deeming_agency.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (sector && sector.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (campus && campus.toLowerCase().includes(availableSearchKey.toLowerCase())) ||
-          (name && name.toLowerCase().includes(availableSearchKey.toLowerCase()))
+
+    const searchKey = availableSearchKey.trim().toLowerCase();
+    if (searchKey.length) {
+      result = result.filter(({ consultancy, client, deeming_agency, sector, campus, name }) =>
+        [consultancy, client, deeming_agency, sector, campus, name].some(value => value && value.toLowerCase().includes(searchKey))
       );
     }
     setState({ ...state, availableSearchKey, available_buildings: result });
+  };
+
+  const searchInAssigned = async assignedSearchKey => {
+    const { available_buildings } = state;
+    let availableBuildingIds = available_buildings.map(item => item.id);
+    let result = assigned_buildings.filter(item => !availableBuildingIds.includes(item.id));
+    console.log(result);
+    const searchKey = assignedSearchKey
+      .trim()
+      .toLowerCase()
+      .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+    if (searchKey.length) {
+      result = result.filter(({ consultancy, client, deeming_agency, sector, campus, name }) =>
+        [consultancy, client, deeming_agency, sector, campus, name].some(value => value && value.toLowerCase().includes(searchKey))
+      );
+    }
+    setState({ ...state, assignedSearchKey, assigned_buildings: result });
   };
 
   const cancelModal = () => {
@@ -75,23 +96,6 @@ const UpdateBuildingAssignmentModal = props => {
     } else {
       onCancel();
     }
-  };
-
-  const searchInAssigned = async assignedSearchKey => {
-    let availableBuildingIds = available_buildings.map(item => item.id);
-    let result = assigned_buildings.filter(item => !availableBuildingIds.includes(item.id));
-    if (assignedSearchKey.trim().length) {
-      result = result.filter(
-        ({ consultancy, client, deeming_agency, sector, campus, name }) =>
-          (consultancy && consultancy.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (client && client.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (deeming_agency && deeming_agency.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (sector && sector.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (campus && campus.toLowerCase().includes(assignedSearchKey.toLowerCase())) ||
-          (name && name.toLowerCase().includes(assignedSearchKey.toLowerCase()))
-      );
-    }
-    setState({ ...state, assignedSearchKey, assigned_buildings: result });
   };
 
   const updateAsignedLogbooksForuser = () => {
@@ -129,9 +133,10 @@ const UpdateBuildingAssignmentModal = props => {
   };
 
   const updateAssignedList = (type, id) => {
+    const { assigned_buildings, available_buildings } = state;
     let itemObj = {};
-    let tempAssignedBuildings = available_buildings;
-    let tempAvailableBuildings = assigned_buildings;
+    let tempAssignedBuildings = assigned_buildings;
+    let tempAvailableBuildings = available_buildings;
     let tempBuildingIds = [];
 
     if (id === "all") {
@@ -203,8 +208,8 @@ const UpdateBuildingAssignmentModal = props => {
                           </tr>
                         </thead>
                         <tbody>
-                          {available_buildings && available_buildings.length ? (
-                            available_buildings.map((item, i) => (
+                          {state.available_buildings && state.available_buildings.length ? (
+                            state.available_buildings?.map((item, i) => (
                               <tr key={i}>
                                 <td className="img-sq-box">
                                   <span className="material-icons icon-arw" onClick={() => updateAssignedList("add", item.id, "available_buildings")}>
@@ -250,7 +255,7 @@ const UpdateBuildingAssignmentModal = props => {
                       </table>
                     </div>
                   </div>
-                  <div className="popup-counter">Count : {available_buildings ? available_buildings.length : 0}</div>
+                  <div className="popup-counter">Count : {state.available_buildings ? state.available_buildings.length : 0}</div>
                 </div>
                 <div className="build-tem3 addWidthHalf">
                   <h4>Assigned Buildings</h4>
@@ -287,8 +292,8 @@ const UpdateBuildingAssignmentModal = props => {
                           </tr>
                         </thead>
                         <tbody>
-                          {assigned_buildings && assigned_buildings.length ? (
-                            assigned_buildings.map((item, i) => (
+                          {state.assigned_buildings && state.assigned_buildings.length ? (
+                            state.assigned_buildings?.map((item, i) => (
                               <tr key={i}>
                                 <td className="img-sq-box">
                                   <span className="material-icons icon-arw" onClick={() => updateAssignedList("remove", item.id)}>
@@ -334,7 +339,7 @@ const UpdateBuildingAssignmentModal = props => {
                       </table>
                     </div>
                   </div>
-                  <div className="popup-counter">Count : {assigned_buildings ? assigned_buildings.length : 0}</div>
+                  <div className="popup-counter">Count : {state.assigned_buildings ? state.assigned_buildings.length : 0}</div>
                 </div>
               </div>
 

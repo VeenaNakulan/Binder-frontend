@@ -16,3 +16,5 @@ export const exportUsers = params =>
   logbookGateWay.get(`${serviceEndPoints.userEndPoints.getUsers}/export_xl`, { method: "GET", responseType: "blob", params });
 export const deleteUsersLog = id => logbookGateWay.delete(`${serviceEndPoints.userEndPoints.getLogs}/${id}`);
 export const restoreUsersLog = id => logbookGateWay.patch(`${serviceEndPoints.userEndPoints.getLogs}/${id}/restore`);
+
+export const getUserBuildingLogbook = params => logbookGateWay.get(`${serviceEndPoints.userEndPoints.getUserBuildingLogbook}`, { params });

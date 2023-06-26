@@ -247,3 +247,23 @@ export const restoreUsersLog = id => {
     }
   };
 };
+
+export const getUserBuildingLogbook = (params, path) => {
+  return async dispatch => {
+    try {
+      dispatch({ type: actionTypes.GET_USER_BUILDING_LOGBOOK_REQUEST });
+      const res = await Service.getUserBuildingLogbook(params, path);
+      if (res && res.status === 200) {
+        if (res.data) {
+          dispatch({ type: actionTypes.GET_USER_BUILDING_LOGBOOK_SUCCESS, response: res.data });
+        } else {
+          dispatch({ type: actionTypes.GET_USER_BUILDING_LOGBOOK_FAILURE, error: res.data });
+        }
+      } else {
+        dispatch({ type: actionTypes.GET_USER_BUILDING_LOGBOOK_FAILURE, error: res.data });
+      }
+    } catch (e) {
+      dispatch({ type: actionTypes.GET_USER_BUILDING_LOGBOOK_FAILURE, error: e.response && e.response.data });
+    }
+  };
+};

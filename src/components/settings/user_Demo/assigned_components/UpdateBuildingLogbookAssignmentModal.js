@@ -29,11 +29,11 @@ const UpdateBuildingLogbookAssignmentModal = props => {
     showConfirmation: false,
     availableSearchKey: "",
     assignedSearchKey: "",
-    showCancelConfirmModal: false
+    showCancelConfirmModal: false,
+    assigned_building_logbooks: []
   });
 
   const {
-    showCurrentAssignmentModal,
     user,
     activeTab,
     user_ids,
@@ -46,15 +46,20 @@ const UpdateBuildingLogbookAssignmentModal = props => {
 
   useEffect(() => {
     getAssignBuildingLogbookForUserPopupDetails();
+  }, [getAssignBuildingLogbookToUserPopupDetailsResponse]);
+
+  useEffect(() => {
+    dispatch(actions.getAssignBuildingLogbookToUserPopupDetails(user_id));
   }, []);
 
   const getAssignBuildingLogbookForUserPopupDetails = () => {
-    dispatch(actions.getAssignBuildingLogbookToUserPopupDetails(user_id));
     const { success } = getAssignBuildingLogbookToUserPopupDetailsResponse;
     if (success) {
       setState({
         ...state,
         user,
+        assigned_building_logbooks,
+        available_building_logbooks,
         initial_assigned_building_logbooks: assigned_building_logbooks?.map(item => item.id),
         user_ids: assigned_building_logbooks?.map(item => item.id)
       });
@@ -63,9 +68,10 @@ const UpdateBuildingLogbookAssignmentModal = props => {
   };
 
   const updateAssignedList = async (type, id) => {
+    const { assigned_building_logbooks, available_building_logbooks } = state;
     let itemObj = {};
-    let tempAssignedBuildingLogbooks = available_building_logbooks;
-    let tempAvailableBuildingLogbooks = assigned_building_logbooks;
+    let tempAssignedBuildingLogbooks = assigned_building_logbooks;
+    let tempAvailableBuildingLogbooks = available_building_logbooks;
     let tempLogbookIds = [];
 
     if (id === "all") {
@@ -100,10 +106,14 @@ const UpdateBuildingLogbookAssignmentModal = props => {
   };
 
   const searchInAvailable = availableSearchKey => {
+    const { assigned_building_logbooks } = state;
     const assignedBuildingLogbookIds = assigned_building_logbooks?.map(item => item.id);
     let result = available_building_logbooks.filter(item => !assignedBuildingLogbookIds.includes(item.id));
 
-    const searchKey = availableSearchKey.trim().toLowerCase();
+    const searchKey = availableSearchKey
+      .trim()
+      .toLowerCase()
+      .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
     if (searchKey.length) {
       result = result.filter(({ building, campus, client, deeming_agency, name, sector }) =>
         [building, campus, client, deeming_agency, name, sector].some(value => value && value.toLowerCase().includes(searchKey))
@@ -112,10 +122,15 @@ const UpdateBuildingLogbookAssignmentModal = props => {
 
     setState({ ...state, availableSearchKey, available_building_logbooks: result });
   };
+
   const searchInAssigned = async assignedSearchKey => {
+    const { available_building_logbooks } = state;
     let availableBuildingIds = available_building_logbooks?.map(item => item.id);
     let result = assigned_building_logbooks.filter(item => !availableBuildingIds.includes(item.id));
-    const searchKey = assignedSearchKey.trim().toLowerCase();
+    const searchKey = assignedSearchKey
+      .trim()
+      .toLowerCase()
+      .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
     if (searchKey.length) {
       result = result.filter(({ building, client, deeming_agency, sector, campus, name }) =>
         [building, client, deeming_agency, sector, campus, name].some(value => value && value.toLowerCase().includes(searchKey))
@@ -208,8 +223,8 @@ const UpdateBuildingLogbookAssignmentModal = props => {
                           </tr>
                         </thead>
                         <tbody>
-                          {available_building_logbooks && available_building_logbooks.length ? (
-                            available_building_logbooks.map((item, i) => (
+                          {state.available_building_logbooks && state.available_building_logbooks.length ? (
+                            state.available_building_logbooks?.map((item, i) => (
                               <tr key={i}>
                                 <td className="img-sq-box">
                                   <span
@@ -295,8 +310,8 @@ const UpdateBuildingLogbookAssignmentModal = props => {
                           </tr>
                         </thead>
                         <tbody>
-                          {assigned_building_logbooks && assigned_building_logbooks.length ? (
-                            assigned_building_logbooks.map((item, i) => (
+                          {state.assigned_building_logbooks && state.assigned_building_logbooks.length ? (
+                            state.assigned_building_logbooks.map((item, i) => (
                               <tr key={i}>
                                 <td className="img-sq-box">
                                   <span className="material-icons icon-arw" onClick={() => updateAssignedList("remove", item.id)}>
